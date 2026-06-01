@@ -1,6 +1,4 @@
-// Aguarda o carregamento completo do DOM
 document.addEventListener('DOMContentLoaded', () => {
-    // Dados dos artistas
     const artistsData = [
         { name: 'Zé Neto & Cristiano', image: './assets/imgi_3_artista-ze-neto.jpg' },
         { name: 'Matheus & Kauan', image: './assets/imgi_4_artista-mateus-kauan.jpg' },
@@ -14,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Michael Jackson', image: './assets/imgi_64_ab6775700000ee856a3ba0d47990204a73f846f4.jpg' }
     ];
 
-    // Dados dos álbuns
     const albumsData = [
         { name: 'White Noise (Sleep & Relaxation Sounds)', artist: 'Sleepy John', image: './assets/imgi_9_album-white-noise.jpg' },
         { name: '1 Por Amor, 2 Por Dinheiro', artist: 'Racionais', image: './assets/imgi_10_album-vida-loka.jpg' },
@@ -24,140 +21,48 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'O Céu Explica Tudo', artist: 'Henrique & Juliano', image: './assets/imgi_14_album-ceu-explica.jpg' },
         { name: 'Count your blessings', artist: 'Bring Me The Horizon', image: './assets/imgi_219_image-8.png' },
         { name: 'Popular', artist: 'The Weeknd', image: './assets/imgi_136_0x1900-000000-80-0-0.jpg' },
-        { name: 'THRILLER', artist: 'Michael Jackson', image: './assets/imgi_25_default.jpg' },
+        { name: 'THRILLER', artist: 'Michael Jackson', image: './assets/imgi_25_default.jpg' }
     ];
 
-    const artGrid = document.querySelector('.artists-grid');
+    const artistsGrid = document.querySelector('.artists-grid');
     const albumsGrid = document.querySelector('.albums-grid');
 
-    artistsData.forEach((artist, index) => {
-        const artistCard = document.createElement('div');
-        artistCard.classList.add('artist-card', 'fade-slide-up');
-        artistCard.style.transitionDelay = `${index * 70}ms`;
+    const headerItems = document.querySelectorAll(
+        '.nav-item, .nav-library, .nav-playlist, .nav-podcast, .search-bar, .banner'
+    );
 
-        artistCard.innerHTML = `
-            <img src="${artist.image}" alt="${artist.name}">
-            <p>${artist.name}</p>
-        `;
+    function createCard(data, type) {
+        const el = document.createElement('div');
+        el.classList.add(type === 'artist' ? 'artist-card' : 'album-card', 'fade-slide-up');
 
-        artGrid.appendChild(artistCard);
+        el.innerHTML =
+            type === 'artist'
+                ? `<img src="${data.image}" alt="${data.name}"><p>${data.name}</p>`
+                : `<img src="${data.image}" alt="${data.name}"><h3>${data.name}</h3><p>${data.artist}</p>`;
+
+        return el;
+    }
+
+    artistsData.forEach((artist, i) => {
+        const card = createCard(artist, 'artist');
+        card.style.transitionDelay = `${i * 70}ms`;
+        artistsGrid.appendChild(card);
     });
 
-
-    albumsData.forEach((album, index) => {
-        const albumCard = document.createElement('div');
-        albumCard.classList.add('album-card', 'fade-slide-up');
-        albumCard.style.transitionDelay = `${(artistsData.length + index) * 70}ms`;
-
-        albumCard.innerHTML = `
-            <img src="${album.image}" alt="${album.name}">
-            <h3>${album.name}</h3>
-            <p>${album.artist}</p>
-        `;
-
-        albumsGrid.appendChild(albumCard);
+    albumsData.forEach((album, i) => {
+        const card = createCard(album, 'album');
+        card.style.transitionDelay = `${(artistsData.length + i) * 70}ms`;
+        albumsGrid.appendChild(card);
     });
 
-
-    const visibleHeaderItems = document.querySelectorAll('.nav-item, .nav-library, .nav-playlist, .nav-podcast, .search-bar, .banner');
-    visibleHeaderItems.forEach((item, index) => {
+    headerItems.forEach((item, i) => {
         item.classList.add('fade-slide-up');
-        item.style.transitionDelay = `${(artistsData.length + albumsData.length + index) * 50}ms`;
+        item.style.transitionDelay = `${(artistsData.length + albumsData.length + i) * 50}ms`;
     });
-
 
     requestAnimationFrame(() => {
-        document.querySelectorAll('.fade-slide-up').forEach(item => item.classList.add('visible'));
+        document.querySelectorAll('.fade-slide-up').forEach(el => {
+            el.classList.add('visible');
+        });
     });
-
-
-    const sidebar = document.querySelector('nav');
-    const isDesktopScroll = window.matchMedia('(hover: hover)').matches && window.innerWidth > 980;
-
-    if (isDesktopScroll) {
-        let sidebarCurrent = sidebar.scrollTop;
-        let sidebarTarget = sidebarCurrent;
-        let sidebarAnimating = false;
-
-
-        const smoothSidebarScroll = () => {
-            sidebarCurrent += (sidebarTarget - sidebarCurrent) * 0.16;
-
-            if (Math.abs(sidebarTarget - sidebarCurrent) < 0.5) {
-                sidebar.scrollTop = sidebarTarget;
-                sidebarAnimating = false;
-                return;
-            }
-
-            sidebar.scrollTop = sidebarCurrent;
-            requestAnimationFrame(smoothSidebarScroll);
-        };
-
-
-        sidebar.addEventListener('wheel', event => {
-            if (event.ctrlKey || event.metaKey || event.altKey) {
-                return;
-            }
-
-            const atTop = sidebar.scrollTop === 0;
-            const atBottom = sidebar.scrollTop + sidebar.clientHeight >= sidebar.scrollHeight - 1;
-
-            if ((event.deltaY < 0 && atTop) || (event.deltaY > 0 && atBottom)) {
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            sidebarTarget = Math.max(
-                0,
-                Math.min(sidebar.scrollHeight - sidebar.clientHeight, sidebarTarget + event.deltaY)
-            );
-
-            if (!sidebarAnimating) {
-                sidebarAnimating = true;
-                requestAnimationFrame(smoothSidebarScroll);
-            }
-        }, { passive: false });
-
-        let currentScroll = window.scrollY;
-        let targetScroll = currentScroll;
-        let isAnimating = false;
-
-
-        const smoothScroll = () => {
-            currentScroll += (targetScroll - currentScroll) * 0.16;
-
-            if (Math.abs(targetScroll - currentScroll) < 0.5) {
-                window.scrollTo(0, targetScroll);
-                isAnimating = false;
-                return;
-            }
-
-            window.scrollTo(0, currentScroll);
-            requestAnimationFrame(smoothScroll);
-        };
-
-        // Event listener para scroll suave da página
-        window.addEventListener('wheel', event => {
-            if (event.ctrlKey || event.metaKey || event.altKey) {
-                return;
-            }
-
-            if (event.target.closest('nav')) {
-                return;
-            }
-
-            event.preventDefault();
-            targetScroll = Math.max(
-                0,
-                Math.min(document.documentElement.scrollHeight - window.innerHeight, targetScroll + event.deltaY)
-            );
-
-            if (!isAnimating) {
-                isAnimating = true;
-                requestAnimationFrame(smoothScroll);
-            }
-        }, { passive: false });
-    }
 });
